@@ -21,7 +21,10 @@ public class SppSyntaxHighlighter extends SyntaxHighlighterBase {
     public static final TextAttributesKey NUMBER = TextAttributesKey.createTextAttributesKey("SPP_NUMBER", DefaultLanguageHighlighterColors.NUMBER);
     public static final TextAttributesKey COMMENT = TextAttributesKey.createTextAttributesKey("SPP_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT);
     public static final TextAttributesKey OPERATOR = TextAttributesKey.createTextAttributesKey("SPP_OPERATOR", DefaultLanguageHighlighterColors.OPERATION_SIGN);
-    public static final TextAttributesKey ATTRIBUTE = TextAttributesKey.createTextAttributesKey("SPP_ATTRIBUTE", DefaultLanguageHighlighterColors.METADATA);
+    public static final TextAttributesKey BRACKET = TextAttributesKey.createTextAttributesKey("SPP_BRACKET", DefaultLanguageHighlighterColors.BRACKETS);
+
+    public static final TextAttributesKey CONVENTION = TextAttributesKey.createTextAttributesKey("SPP_CONVENTION", DefaultLanguageHighlighterColors.OPERATION_SIGN);
+    public static final TextAttributesKey ATTRIBUTE = TextAttributesKey.createTextAttributesKey("SPP_ATTRIBUTE", DefaultLanguageHighlighterColors.IDENTIFIER);
 
     private static final TextAttributesKey[] BAD_CHAR_KEYS = new TextAttributesKey[]{BAD_CHARACTER};
     private static final TextAttributesKey[] EMPTY_KEYS = new TextAttributesKey[0];
@@ -32,7 +35,7 @@ public class SppSyntaxHighlighter extends SyntaxHighlighterBase {
     private static final TextAttributesKey[] NUMBER_KEYS = new TextAttributesKey[]{NUMBER};
     private static final TextAttributesKey[] COMMENT_KEYS = new TextAttributesKey[]{COMMENT};
     private static final TextAttributesKey[] OPERATOR_KEYS = new TextAttributesKey[]{OPERATOR};
-    private static final TextAttributesKey[] ATTRIBUTE_KEYS = new TextAttributesKey[]{ATTRIBUTE};
+    private static final TextAttributesKey[] BRACKET_KEYS = new TextAttributesKey[]{BRACKET};
 
     @Override
     @NotNull
@@ -49,10 +52,10 @@ public class SppSyntaxHighlighter extends SyntaxHighlighterBase {
             return IDENTIFIER_KEYS;
         } else if (tokenType.equals(SppTypes.LXUPPERIDENTIFIER)) {
             return TYPE_KEYS;
-        } else if (tokenType.equals(SppTypes.LXPOSTFIXIDENTIFIER)) {
-            return ATTRIBUTE_KEYS;
         } else if (SppTokenSets.OPERATORS.contains(tokenType)) {
             return OPERATOR_KEYS;
+        } else if (SppTokenSets.BRACKETS.contains(tokenType)) {
+            return BRACKET_KEYS;
         } else if (SppTokenSets.STRINGS.contains(tokenType)) {
             return STRING_KEYS;
         } else if (SppTokenSets.NUMBERS.contains(tokenType)) {

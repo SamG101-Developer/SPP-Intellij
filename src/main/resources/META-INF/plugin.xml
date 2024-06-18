@@ -13,5 +13,6 @@
         <lang.parserDefinition language="Spp" implementationClass="org.intellij.sdk.language.SppParserDefinition"/>
         <lang.syntaxHighlighterFactory language="Spp" implementationClass="org.intellij.sdk.language.SppSyntaxHighlighterFactory"/>
         <colorSettingsPage implementationClass="org.intellij.sdk.language.SppColorSettingsPage"/>
+        <annotator language="Spp" implementationClass="org.intellij.sdk.language.SppAnnotator"/>
     </extensions>
 </idea-plugin>

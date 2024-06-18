@@ -98,7 +98,6 @@
 
         LxRegex = "regexp:r\".*\""
         LxIdentifier = "regexp:[a-z][_a-zA-Z0-9]*"
-        LxPostfixIdentifier = "regexp:[a-z][_a-zA-Z0-9]*"
         LxUpperIdentifier = "regexp:[A-Z][_a-zA-Z0-9]*"
         LxBinDigits = "regexp:0b[01]+"
         LxHexDigits = "regexp:0x[0-9a-fA-F]+"
@@ -249,8 +248,8 @@ UnaryOp ::= KwAsync
 PostfixOp ::= PostfixOpMemberAccess | PostfixOpEarlyReturn | PostfixOpFunctionCall
 PostfixOpFunctionCall ::= TkParenL FunctionCallArguments TkParenR TkVariadic?
 PostfixOpMemberAccess ::= PostfixOpMemberAccessRuntime | PostfixOpMemberAccessStatic
-PostfixOpMemberAccessRuntime ::= TkDot (PostfixIdentifier | LxDecInteger)
-PostfixOpMemberAccessStatic ::= TkDblColon PostfixIdentifier
+PostfixOpMemberAccessRuntime ::= TkDot (Identifier | LxDecInteger)
+PostfixOpMemberAccessStatic ::= TkDblColon Identifier
 PostfixOpEarlyReturn ::= TkQst
 
 // Conventions
@@ -290,7 +289,6 @@ SelfType ::= KwSelfType
 Identifier ::= LxIdentifier
 UpperIdentifier ::= LxUpperIdentifier
 GenericIdentifier ::= UpperIdentifier GenericArguments?
-PostfixIdentifier ::= LxPostfixIdentifier
 
 // Literals
 Literal ::= LiteralNumber | LiteralString | LiteralTuple | LiteralRegex | LiteralBoolean

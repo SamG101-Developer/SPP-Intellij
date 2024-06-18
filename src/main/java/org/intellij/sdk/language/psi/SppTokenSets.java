@@ -7,7 +7,8 @@ public interface SppTokenSets {
     TokenSet IDENTIFIERS = TokenSet.create(SppTypes.IDENTIFIER, SppTypes.UPPER_IDENTIFIER);
     TokenSet COMMENTS = TokenSet.create(SppTypes.LINE_COMMENT, SppTypes.BLOCK_COMMENT);
     TokenSet STRINGS = TokenSet.create(SppTypes.LXDOUBLEQUOTESTR);
-    TokenSet NUMBERS = TokenSet.create(SppTypes.LXDECDECIMAL, SppTypes.LXDECINTEGER, SppTypes.LXHEXDIGITS, SppTypes.LXBINDIGITS);
+    TokenSet NUMBERS = TokenSet.create(
+            SppTypes.LXDECDECIMAL, SppTypes.LXDECINTEGER, SppTypes.LXHEXDIGITS, SppTypes.LXBINDIGITS);
     TokenSet KEYWORDS = TokenSet.create(
             SppTypes.KWAS, SppTypes.KWASYNC, SppTypes.KWCASE, SppTypes.KWCLS, SppTypes.KWCOR, SppTypes.KWELSE,
             SppTypes.KWFALSE, SppTypes.KWFUN, SppTypes.KWGEN, SppTypes.KWIS, SppTypes.KWLET, SppTypes.KWLOOP,
@@ -23,4 +24,7 @@ public interface SppTokenSets {
             SppTypes.TKEXPASSIGN, SppTypes.TKMOD, SppTypes.TKMODASSIGN, SppTypes.TKMUL, SppTypes.TKMULASSIGN,
             SppTypes.TKLOGICALAND, SppTypes.TKLOGICALANDASSIGN, SppTypes.TKLOGICALOR, SppTypes.TKLOGICALORASSIGN,
             SppTypes.TKQST, SppTypes.TKREM, SppTypes.TKREMASSIGN, SppTypes.TKSUB, SppTypes.TKSUBASSIGN);
+    TokenSet BRACKETS = TokenSet.create(
+            SppTypes.TKPARENL, SppTypes.TKPARENR, SppTypes.TKBRACKL, SppTypes.TKBRACKR, SppTypes.TKBRACEL,
+            SppTypes.TKBRACER);
 }
