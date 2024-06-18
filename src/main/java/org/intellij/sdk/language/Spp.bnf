@@ -1,0 +1,315 @@
+{
+    parserClass="org.intellij.sdk.language.parser.SppParser"
+    extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+    psiClassPrefix="Spp"
+    psiImplClassSuffix="Impl"
+    psiPackage="org.intellij.sdk.language.psi"
+    psiImplPackage="org.intellij.sdk.language.psi.impl"
+
+    elementTypeHolderClass="org.intellij.sdk.language.psi.SppTypes"
+    elementTypeClass="org.intellij.sdk.language.psi.SppElementType"
+    tokenTypeClass="org.intellij.sdk.language.psi.SppTokenType"
+
+    tokens = [
+        line_comment = "regexp:#.*"
+        block_comment = "regexp:##[^#]*##"
+
+        TkLogicalAnd = "&&"
+        TkLogicalAndAssign = "&&="
+        TkLogicalOr = "||"
+        TkLogicalOrAssign = "||="
+        TkBitAnd = "&"
+        TkBitAndAssign = "&="
+        TkBitOr = "|"
+        TkBitOrAssign = "|="
+        TkBitXor = "^"
+        TkBitXorAssign = "^="
+        TkBitShiftL = "<<"
+        TkBitShiftLAssign = "<<="
+        TkBitShiftR = ">>"
+        TkBitShiftRAssign = ">>="
+        TkBitRotateL = "<<<"
+        TkBitRotateLAssign = "<<<="
+        TkBitRotateR = ">>>"
+        TkBitRotateRAssign = ">>>="
+        TkEq = "=="
+        TkNe = "!="
+        TkLe = "<="
+        TkGe = ">="
+        TkLt = "<"
+        TkGt = ">"
+        TkSs = "<=>"
+        TkAdd = "+"
+        TkSub = "-"
+        TkMul = "*"
+        TkDiv = "/"
+        TkRem = "%"
+        TkMod = "%%"
+        TkExp = "**"
+        TkAddAssign = "+="
+        TkSubAssign = "-="
+        TkMulAssign = "*="
+        TkDivAssign = "/="
+        TkRemAssign = "%="
+        TkModAssign = "%%="
+        TkExpAssign = "**="
+        TkParenL = "("
+        TkParenR = ")"
+        TkBrackL = "["
+        TkBrackR = "]"
+        TkBraceL = "{"
+        TkBraceR = "}"
+        TkCoalesce = "??"
+        TkQst = "?"
+        TkVariadic = ".."
+        TkColon = ":"
+        TkDot = "."
+        TkDblColon = "::"
+        TkComma = ","
+        TkAssign = "="
+        TkArrowR = "->"
+        TkAt = "@"
+        TkUnderscore = "_"
+        KwMod = "mod"
+        KwCls = "cls"
+        KwSup = "sup"
+        KwFun = "fun"
+        KwCor = "cor"
+        KwUse = "use"
+        KwLet = "let"
+        KwMut = "mut"
+        KwCase = "case"
+        KwElse = "else"
+        KwLoop = "loop"
+        KwWith = "with"
+        KwThen = "then"
+        KwRet = "ret"
+        KwGen = "gen"
+        KwWhere = "where"
+        KwAs = "as"
+        KwIs = "is"
+        KwTrue = "true"
+        KwFalse = "false"
+        KwSelf = "self"
+        KwSelfType = "Self"
+        KwOn = "on"
+        KwAsync = "async"
+
+        LxRegex = "regexp:r\".*\""
+        LxIdentifier = "regexp:[a-z][_a-zA-Z0-9]*"
+        LxPostfixIdentifier = "regexp:[a-z][_a-zA-Z0-9]*"
+        LxUpperIdentifier = "regexp:[A-Z][_a-zA-Z0-9]*"
+        LxBinDigits = "regexp:0b[01]+"
+        LxHexDigits = "regexp:0x[0-9a-fA-F]+"
+        LxDecInteger = "regexp:[0-9]([0-9_]*[0-9])?"
+        LxDecDecimal = "regexp:[0-9]([0-9_]*[0-9])?\.[0-9]([0-9_]*[0-9])?"
+        LxDoubleQuoteStr = "regexp:\"[^\"]*\""
+    ]
+}
+
+
+// Program
+Program ::= ModulePrototype <<eof>>
+
+// Module
+ModulePrototype ::= Annotation* KwMod ModuleIdentifier ModuleImplementation
+ModuleImplementation ::= ModuleMember*
+ModuleMember ::= FunctionPrototype | ClassPrototype | SupPrototypeNormal | SupPrototypeInheritance | TypedefStatement | LetStatementInitialized
+ModuleIdentifier ::= Identifier (TkDblColon Identifier)*
+
+// Class
+ClassPrototype ::= Annotation* KwCls UpperIdentifier GenericParameters? WhereBlock? ClassImplementation
+ClassImplementation ::= TkBraceL ClassMember* TkBraceR
+ClassMember ::= ClassAttribute
+ClassAttribute ::= Annotation* Identifier TkColon Type
+
+// Superimposition
+SupPrototypeNormal ::= KwSup GenericParameters? Type WhereBlock? SupImplementation
+SupPrototypeInheritance ::= KwSup GenericParameters? Type KwOn Type WhereBlock? SupImplementation
+SupImplementation ::= TkBraceL SupMember* TkBraceR
+SupMember ::= SupMethodPrototype | SupTypedef
+SupTypedef ::= Annotation* TypedefStatement
+SupMethodPrototype ::= FunctionPrototype
+
+// Function
+FunctionPrototype ::= CoroutinePrototype | SubroutinePrototype
+SubroutinePrototype ::= Annotation* KwFun Identifier GenericParameters? FunctionParameters TkArrowR Type WhereBlock? FunctionImplementation
+CoroutinePrototype ::= Annotation* KwCor Identifier GenericParameters? FunctionParameters TkArrowR Type WhereBlock? FunctionImplementation
+FunctionImplementation ::= InnerScope
+FunctionParameters ::= TkParenL (FunctionParameter (TkComma FunctionParameter)*)? TkParenR
+FunctionParameter ::= FunctionParameterVariadic | FunctionParameterOptional | FunctionParameterRequired | FunctionParameterSelf
+FunctionParameterRequired ::= LocalVariable TkColon Convention Type
+FunctionParameterOptional ::= LocalVariable TkColon Convention Type TkAssign Expression
+FunctionParameterVariadic ::= LocalVariable TkColon Convention TkVariadic Type
+FunctionParameterSelf ::= KwMut? Convention KwSelf
+FunctionCallArguments ::= TkParenL (FunctionCallArgument (TkComma FunctionCallArgument)*)? TkParenR
+FunctionCallArgument ::= FunctionCallArgumentNamed | FunctionCallArgumentNormal
+FunctionCallArgumentNormal ::= Convention TkVariadic? Expression
+FunctionCallArgumentNamed ::= Identifier TkAssign Convention TkVariadic? Expression
+
+// Generics
+GenericParameters ::= TkBrackL (GenericParameter (TkComma GenericParameter)*)? TkBrackR
+GenericParameter ::= GenericParameterVariadic | GenericParameterOptional | GenericParameterRequired
+GenericParameterRequired ::= UpperIdentifier GenericInlineConstraints?
+GenericParameterOptional ::= UpperIdentifier GenericInlineConstraints? TkAssign Type
+GenericParameterVariadic ::= TkVariadic UpperIdentifier GenericInlineConstraints?
+GenericArguments ::= TkBrackL (GenericArgument (TkComma GenericArgument)*)? TkBrackR
+GenericArgument ::= GenericArgumentNamed | GenericArgumentNormal
+GenericArgumentNormal ::= Type
+GenericArgumentNamed ::= UpperIdentifier TkAssign Type
+
+// Constraints
+GenericInlineConstraints ::= TkColon (Type (TkBitAnd Type)*)?
+WhereBlock ::= KwWhere WhereBlockConstraintsGroup
+WhereBlockConstraintsGroup ::= TkBrackL (WhereBlockConstraints (TkComma WhereBlockConstraints)*)? TkBrackR
+WhereBlockConstraints ::= Type (TkComma Type)* TkColon Type (TkBitAnd Type)*
+
+// Annotation
+Annotation ::= TkAt Identifier (TkDblColon Identifier)* PostfixOpFunctionCall
+
+// Expressions
+Expression ::= BinaryExpressionLevel1
+BinaryExpressionLevel1 ::= BinaryExpressionLevel2 (BinaryOpPrecedenceLevel1 BinaryExpressionLevel1)*
+BinaryExpressionLevel2 ::= BinaryExpressionLevel3 (BinaryOpPrecedenceLevel2 BinaryExpressionLevel2)*
+BinaryExpressionLevel3 ::= BinaryExpressionLevel4 (BinaryOpPrecedenceLevel3 BinaryExpressionLevel3)*
+BinaryExpressionLevel4 ::= BinaryExpressionLevel5 (BinaryOpPrecedenceLevel4 BinaryExpressionLevel4)*
+BinaryExpressionLevel5 ::= BinaryExpressionLevel6 (BinaryOpPrecedenceLevel5 BinaryExpressionLevel5)*
+BinaryExpressionLevel6 ::= BinaryExpressionLevel7 (BinaryOpPrecedenceLevel6 BinaryExpressionLevel6)*
+BinaryExpressionLevel7 ::= UnaryExpression (BinaryOpPrecedenceLevel7 BinaryExpressionLevel7)*
+UnaryExpression ::= UnaryOp* PostfixExpression
+PostfixExpression ::= PrimaryExpression PostfixOp*
+PrimaryExpression ::= Literal | ObjectInitialization | LambdaPrototype | ParenthesizedExpression | Identifier | IfExpression | WhileExpression | YieldExpression | WithExpression | InnerScope | SelfKeyword | TkVariadic
+ParenthesizedExpression ::= TkParenL Expression TkParenR
+SelfKeyword ::= KwSelf
+
+// Advanced Expressions
+IfExpression ::= KwCase Expression PatternCompOp KwThen PatternStatement+
+WhileExpression ::= KwLoop Expression InnerScope WhileElseExpression?
+WhileElseExpression ::= KwElse InnerScope
+YieldExpression ::= KwGen KwWith? (Convention Expression)?
+WithExpression ::= KwWith WithExpressionLhsAlias? Expression InnerScope
+WithExpressionLhsAlias ::= LocalVariable TkAssign
+
+// Statements
+ReturnStatement ::= KwRet Expression?
+InnerScope ::= TkBraceL Statement* TkBraceR
+Statement ::= TypedefStatement | LetStatement | ReturnStatement | AssignmentStatement | Expression
+
+// Typedef
+TypedefStatement ::= KwUse GenericParameters? TypeNamespace? TypedefItem
+TypedefItem ::= TypedefStatementSpecificItem | TypedefStatementSpecificItems | TypedefStatementAllItems
+TypedefStatementSpecificItem ::= TypeSingle TypedefStatementSpecificItemAlias?
+TypedefStatementSpecificItems ::= TkBraceL (TypedefStatementSpecificItem (TkComma TypedefStatementSpecificItem)*)? TkBraceR
+TypedefStatementAllItems ::= TkBraceL TkMul TkBraceR
+TypedefStatementSpecificItemAlias ::= KwAs GenericIdentifier
+
+// Let
+LetStatement ::= LetStatementInitialized | LetStatementUninitialized
+LetStatementInitialized ::= KwLet LocalVariable TkAssign Expression
+LetStatementUninitialized ::= KwLet LocalVariable TkColon Type
+LocalVariable ::= LocalVariableSingle | LocalVariableTuple | LocalVariableDestructure
+LocalVariableSingle ::= KwMut? TkVariadic? Identifier
+LocalVariableTuple ::= TkParenL (LocalVariableNestedForTuple (TkComma LocalVariableNestedForTuple)*)? TkParenR
+LocalVariableDestructure ::= TkParenL (LocalVariableNestedForDestructure (TkComma LocalVariableNestedForDestructure)*)? TkParenR
+LocalVariableNestedForTuple ::= LocalVariableTuple | LocalVariableDestructure | LocalVariableSingle | LocalVariableSkipArgument
+LocalVariableNestedForDestructure ::= LocalVariableAssignment | LocalVariableSingle | LocalVariableSkipArgument
+LocalVariableSkipArgument ::= TkVariadic
+LocalVariableAssignment ::= Identifier TkAssign LocalVariableNonAssignment
+LocalVariableNonAssignment ::= LocalVariableTuple | LocalVariableDestructure | LocalVariableSingle
+
+// Assignment
+AssignmentStatement ::= Expression+ TkAssign Expression
+
+// Patterns
+PatternStatement ::= PatternCompOp? (PatternVariant (TkBitOr PatternVariant)*) PatternGuard? InnerScope
+PatternCompOp ::= TkEq | TkNe | TkLe | TkGe | TkLt | TkGt | TkIs
+PatternGuard ::= TkLogicalAnd Expression
+PatternVariant ::= PatternVariantTuple | PatternVariantDestructure | PatternVariantVariable | PatternVariantLiteral | PatternVariantElse
+PatternVariantTuple ::= TkParenL (PatternVariantNestedForTuple (TkComma PatternVariantNestedForTuple)*) TkParenR
+PatternVariantDestructure ::= TkParenL (PatternVariantNestedForDestructure (TkComma PatternVariantNestedForDestructure)*)? TkParenR
+PatternVariantVariable ::= KwMut? TkVariadic? Identifier
+PatternVariantLiteral ::= LiteralNumber | LiteralString | LiteralBoolean
+PatternVariantElse ::= KwElse
+PatternVariantSkipArgument ::= TkVariadic
+PatternVariantAssignment ::= Identifier TkAssign PatternVariantNestedForNonAssignment
+PatternVariantNestedForTuple ::= PatternVariantTuple | PatternVariantDestructure | PatternVariantVariable | PatternVariantLiteral | PatternVariantSkipArgument
+PatternVariantNestedForDestructure ::= PatternVariantAssignment | PatternVariantVariable | PatternVariantSkipArgument
+PatternVariantNestedForNonAssignment ::= PatternVariantTuple | PatternVariantDestructure | PatternVariantVariable | PatternVariantLiteral
+
+// Operators
+BinaryOpPrecedenceLevel1 ::= TkCoalesce
+BinaryOpPrecedenceLevel2 ::= TkLogicalOr | TkLogicalOrAssign
+BinaryOpPrecedenceLevel3 ::= TkLogicalAnd | TkLogicalAndAssign
+BinaryOpPrecedenceLevel4 ::= TkEq | TkNe | TkLe | TkGe | TkLt | TkGt | TkSs | TkIs
+BinaryOpPrecedenceLevel5 ::= TkBitShiftL | TkBitShiftR | TkBitRotateL | TkBitRotateR | TkBitShiftLAssign | TkBitShiftRAssign | TkBitRotateLAssign | TkBitRotateRAssign
+BinaryOpPrecedenceLevel6 ::= TkBitOr | TkBitXor | TkAdd | TkSub | TkBitOrAssign | TkBitXorAssign | TkAddAssign | TkSubAssign
+BinaryOpPrecedenceLevel7 ::= TkBitAnd | TkMul | TkDiv | TkRem | TkMod | TkExp | TkBitAndAssign | TkMulAssign | TkDivAssign | TkRemAssign | TkModAssign | TkExpAssign
+UnaryOp ::= KwAsync
+PostfixOp ::= PostfixOpMemberAccess | PostfixOpEarlyReturn | PostfixOpFunctionCall
+PostfixOpFunctionCall ::= TkParenL FunctionCallArguments TkParenR TkVariadic?
+PostfixOpMemberAccess ::= PostfixOpMemberAccessRuntime | PostfixOpMemberAccessStatic
+PostfixOpMemberAccessRuntime ::= TkDot (PostfixIdentifier | LxDecInteger)
+PostfixOpMemberAccessStatic ::= TkDblColon PostfixIdentifier
+PostfixOpEarlyReturn ::= TkQst
+
+// Conventions
+Convention ::= (TkBitAnd KwMut?)?
+
+// Object Initialization
+ObjectInitialization ::= TypeSingle ObjectInitializerArguments
+ObjectInitializerArguments ::= TkParenL (ObjectInitializerArgument (TkComma ObjectInitializerArgument)*)? TkParenR
+ObjectInitializerArgument ::= ObjectInitializerArgumentNamed | ObjectInitializerArgumentNormal
+ObjectInitializerArgumentNormal ::= Identifier
+ObjectInitializerArgumentNamed ::= ObjectInitializerArgumentNamedKey TkAssign Expression
+ObjectInitializerArgumentNamedKey ::= Identifier | KwSup | KwElse
+
+// Lambda
+LambdaPrototype ::= LambdaSubroutinePrototype | LambdaCoroutinePrototype
+LambdaSubroutinePrototype ::= KwFun GenericParameters? FunctionParameters TkArrowR Type LambdaCaptureBlock WhereBlock? FunctionImplementation
+LambdaCoroutinePrototype ::= KwCor GenericParameters? FunctionParameters TkArrowR Type LambdaCaptureBlock WhereBlock? FunctionImplementation
+LambdaCaptureBlock ::= KwWith TkBrackL (LambdaCaptureItem (TkComma LambdaCaptureItem)*) TkBrackR
+LambdaCaptureItem ::= LambdaCaptureItemNamed | LambdaCaptureItemNormal
+LambdaCaptureItemNormal ::= Convention Expression
+LambdaCaptureItemNamed ::= Identifier TkAssign Convention Expression
+
+// Types
+Type ::= TypeOptional | TypeUnion | TypeTuple | TypeSingle
+TypeNonUnion ::= TypeSingle | TypeTuple | TypeOptional
+TypeOptional ::= TkQst Type
+TypeUnion ::= TypeNonUnion (TkBitOr Type)*
+TypeTuple ::= TkParenL (Type (TkComma Type)*)? TkParenR
+TypeSingle ::= TypeNamespace? TypeParts
+TypeNamespace ::= (Identifier TkDblColon)+
+TypeParts ::= TypePartFirst (TkDblColon TypePart)*
+TypePartFirst ::= GenericIdentifier | SelfType
+TypePart ::= TkDblColon (GenericIdentifier | LxDecInteger)
+SelfType ::= KwSelfType
+
+// Identifiers
+Identifier ::= LxIdentifier
+UpperIdentifier ::= LxUpperIdentifier
+GenericIdentifier ::= UpperIdentifier GenericArguments?
+PostfixIdentifier ::= LxPostfixIdentifier
+
+// Literals
+Literal ::= LiteralNumber | LiteralString | LiteralTuple | LiteralRegex | LiteralBoolean
+LiteralNumber ::= LiteralNumberBase10 | LiteralNumberBase2 | LiteralNumberBase16
+LiteralString ::= LxDoubleQuoteStr
+LiteralTuple ::= LiteralTuple0Items | LiteralTuple1Items | LiteralTupleNItems
+LiteralRegex ::= LxRegex
+LiteralBoolean ::= KwTrue | KwFalse
+
+// Numbers
+LiteralNumberBase16 ::= LxHexDigits NumericPostfixOp?
+LiteralNumberBase2 ::= LxBinDigits NumericPostfixOp?
+LiteralNumberBase10 ::= LiteralNumberBase10Integer | LiteralNumberBase10Float
+LiteralNumberBase10Integer ::= NumericPrefixOp? LxDecInteger NumericPostfixOp?
+LiteralNumberBase10Float ::= NumericPrefixOp? LxDecDecimal NumericPostfixOp?
+NumericPrefixOp ::= TkAdd | TkSub
+NumericPostfixOp ::= "i8" | "i16" | "i32" | "i64" | "i128" | "i256" | "u8" | "u16" | "u32" | "u64" | "u128" | "u256" | "f8" | "f16" | "f32" | "f64" | "f128" | "f256"
+
+// Tuples
+LiteralTuple0Items ::= TkParenL TkParenR
+LiteralTuple1Items ::= TkParenL Expression TkComma TkParenR
+LiteralTupleNItems ::= TkParenL (Expression (TkComma Expression)*) TkParenR
