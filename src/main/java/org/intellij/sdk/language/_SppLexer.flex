@@ -40,24 +40,6 @@ LXDOUBLEQUOTESTR=\"[^\"]*\"
 <YYINITIAL> {
   {WHITE_SPACE}             { return WHITE_SPACE; }
 
-  "&&"                      { return TKLOGICALAND; }
-  "&&="                     { return TKLOGICALANDASSIGN; }
-  "||"                      { return TKLOGICALOR; }
-  "||="                     { return TKLOGICALORASSIGN; }
-  "&"                       { return TKBITAND; }
-  "&="                      { return TKBITANDASSIGN; }
-  "|"                       { return TKBITOR; }
-  "|="                      { return TKBITORASSIGN; }
-  "^"                       { return TKBITXOR; }
-  "^="                      { return TKBITXORASSIGN; }
-  "<<"                      { return TKBITSHIFTL; }
-  "<<="                     { return TKBITSHIFTLASSIGN; }
-  ">>"                      { return TKBITSHIFTR; }
-  ">>="                     { return TKBITSHIFTRASSIGN; }
-  "<<<"                     { return TKBITROTATEL; }
-  "<<<="                    { return TKBITROTATELASSIGN; }
-  ">>>"                     { return TKBITROTATER; }
-  ">>>="                    { return TKBITROTATERASSIGN; }
   "=="                      { return TKEQ; }
   "!="                      { return TKNE; }
   "<="                      { return TKLE; }
@@ -85,10 +67,11 @@ LXDOUBLEQUOTESTR=\"[^\"]*\"
   "]"                       { return TKBRACKR; }
   "{"                       { return TKBRACEL; }
   "}"                       { return TKBRACER; }
-  "??"                      { return TKCOALESCE; }
   "?"                       { return TKQST; }
   ".."                      { return TKVARIADIC; }
   ":"                       { return TKCOLON; }
+  "&"                       { return TKBORROW; }
+  "|"                       { return TKUNION; }
   "."                       { return TKDOT; }
   "::"                      { return TKDBLCOLON; }
   ","                       { return TKCOMMA; }
@@ -96,19 +79,22 @@ LXDOUBLEQUOTESTR=\"[^\"]*\"
   "->"                      { return TKARROWR; }
   "@"                       { return TKAT; }
   "_"                       { return TKUNDERSCORE; }
-  "mod"                     { return KWMOD; }
   "cls"                     { return KWCLS; }
   "sup"                     { return KWSUP; }
   "fun"                     { return KWFUN; }
   "cor"                     { return KWCOR; }
   "use"                     { return KWUSE; }
+  "ext"                     { return KWEXT; }
   "let"                     { return KWLET; }
   "mut"                     { return KWMUT; }
+  "pin"                     { return KWPIN; }
+  "rel"                     { return KWREL; }
   "case"                    { return KWCASE; }
   "else"                    { return KWELSE; }
   "loop"                    { return KWLOOP; }
   "with"                    { return KWWITH; }
-  "then"                    { return KWTHEN; }
+  "skip"                    { return KWSKIP; }
+  "exit"                    { return KWEXIT; }
   "ret"                     { return KWRET; }
   "gen"                     { return KWGEN; }
   "where"                   { return KWWHERE; }
@@ -118,9 +104,14 @@ LXDOUBLEQUOTESTR=\"[^\"]*\"
   "false"                   { return KWFALSE; }
   "self"                    { return KWSELF; }
   "Self"                    { return KWSELFTYPE; }
-  "on"                      { return KWON; }
+  "and"                     { return KWAND; }
+  "or"                      { return KWOR; }
+  "not"                     { return KWNOT; }
+  "in"                      { return KWIN; }
   "async"                   { return KWASYNC; }
-  "TkIs"                    { return TKIS; }
+  "then"                    { return KWTHEN; }
+  "TkIn"                    { return TKIN; }
+  "TkUnderscope"            { return TKUNDERSCOPE; }
 
   {LINE_COMMENT}            { return LINE_COMMENT; }
   {BLOCK_COMMENT}           { return BLOCK_COMMENT; }
