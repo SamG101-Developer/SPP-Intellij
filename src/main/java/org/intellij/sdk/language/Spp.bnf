@@ -103,7 +103,7 @@
 Program ::= ModulePrototype <<eof>>
 
 // Module
-ModulePrototype ::= Annotation* ModuleImplementation
+ModulePrototype ::= ModuleImplementation
 ModuleImplementation ::= ModuleMember*
 ModuleMember ::= FunctionPrototype | ClassPrototype | SupPrototypeNormal | SupPrototypeInheritance | UseStatement | GlobalConstant
 
@@ -155,7 +155,7 @@ WhereBlockConstraintsGroup ::= TkBrackL (WhereBlockConstraints (TkComma WhereBlo
 WhereBlockConstraints ::= Type (TkComma Type)* TkColon Type (TkAdd Type)*
 
 // Annotation
-Annotation ::= TkAt Identifier (TkDblColon Identifier)* PostfixOpFunctionCall
+Annotation ::= TkAt Identifier (TkDblColon Identifier)*
 
 // Expressions
 Expression ::= BinaryExpressionLevel1
@@ -316,7 +316,7 @@ LiteralNumberBase10 ::= LiteralNumberBase10Float | LiteralNumberBase10Integer
 LiteralNumberBase10Integer ::= NumericPrefixOp? LxDecInteger NumericPostfixType?
 LiteralNumberBase10Float ::= NumericPrefixOp? LxDecDecimal NumericPostfixType?
 NumericPrefixOp ::= TkAdd | TkSub
-NumericPostfixType ::= TkUnderscope ("i8" | "i16" | "i32" | "i64" | "i128" | "i256" | "u8" | "u16" | "u32" | "u64" | "u128" | "u256" | "f8" | "f16" | "f32" | "f64" | "f128" | "f256")
+NumericPostfixType ::= TkUnderscore ("i8" | "i16" | "i32" | "i64" | "i128" | "i256" | "u8" | "u16" | "u32" | "u64" | "u128" | "u256" | "f8" | "f16" | "f32" | "f64" | "f128" | "f256")
 
 // Tuples
 LiteralTuple0Items ::= TkParenL TkParenR

@@ -111,7 +111,6 @@ LXDOUBLEQUOTESTR=\"[^\"]*\"
   "async"                   { return KWASYNC; }
   "then"                    { return KWTHEN; }
   "TkIn"                    { return TKIN; }
-  "TkUnderscope"            { return TKUNDERSCOPE; }
 
   {LINE_COMMENT}            { return LINE_COMMENT; }
   {BLOCK_COMMENT}           { return BLOCK_COMMENT; }
