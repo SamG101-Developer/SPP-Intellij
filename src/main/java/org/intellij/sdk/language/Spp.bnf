@@ -105,7 +105,7 @@ Program ::= ModulePrototype <<eof>>
 // Module
 ModulePrototype ::= ModuleImplementation
 ModuleImplementation ::= ModuleMember*
-ModuleMember ::= FunctionPrototype | ClassPrototype | SupPrototypeNormal | SupPrototypeInheritance | UseStatement | GlobalConstant
+ModuleMember ::= FunctionPrototype | ClassPrototype | SupPrototypeNormal | SupPrototypeInheritance | GlobalUseStatement | GlobalConstant
 
 // Class
 ClassPrototype ::= Annotation* KwCls UpperIdentifier GenericParameters? WhereBlock? ClassImplementation
@@ -178,7 +178,9 @@ LoopExpressionCondition ::= LoopExpressionConditionIterable | LoopExpressionCond
 LoopExpressionConditionBoolean ::= Expression
 LoopExpressionConditionIterable ::= LocalVariable TkIn Expression
 LoopElseExpression ::= KwElse InnerScope
-GenExpression ::= KwGen KwWith? (Convention Expression)?
+GenExpression ::= GenExpressionUnroll | GenExpressionNormal
+GenExpressionUnroll ::= KwGen KwWith Expression
+GenExpressionNormal ::= KwGen Convention Expression?
 WithExpression ::= KwWith WithExpressionLhsAlias? Expression InnerScope
 WithExpressionLhsAlias ::= LocalVariable TkAssign
 
@@ -192,6 +194,7 @@ InnerScope ::= TkBraceL Statement* TkBraceR
 Statement ::= UseStatement | LetStatement | ReturnStatement | ExitStatement | SkipStatement | PinStatement | RelStatement | AssignmentStatement | Expression
 
 // Typedef
+GlobalUseStatement ::= Annotation* KwUse (UseStatementTypeAlias | UseStatementImport)
 UseStatement ::= KwUse (UseStatementTypeAlias | UseStatementImport)
 UseStatementImport ::= UseStatementImportBody
 UseStatementImportMultipleTypes ::= (Identifier TkDblColon)+ TkBraceL UseStatementImportBody (TkComma UseStatementImportBody)* TkBraceR
