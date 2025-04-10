@@ -21,7 +21,6 @@
         TkGe = ">="
         TkLt = "<"
         TkGt = ">"
-        TkSs = "<=>"
 
         TkAdd = "+"
         TkSub = "-"
@@ -30,6 +29,7 @@
         TkRem = "%"
         TkMod = "%%"
         TkExp = "**"
+
         TkAddAssign = "+="
         TkSubAssign = "-="
         TkMulAssign = "*="
@@ -46,14 +46,13 @@
         TkBraceR = "}"
 
         TkQst = "?"
-        TkVariadic = ".."
+        TkDot = "."
+        TkDblDot = ".."
         TkColon = ":"
+        TkDblColon = "::"
 
         TkBorrow = "&"
         TkUnion = "|"
-
-        TkDot = "."
-        TkDblColon = "::"
 
         TkComma = ","
         TkAssign = "="
@@ -72,37 +71,27 @@
         KwCor = "cor"
         KwUse = "use"
         KwExt = "ext"
-
         KwCmp = "cmp"
         KwLet = "let"
         KwMut = "mut"
-        KwPin = "pin"
-        KwRel = "rel"
-
+        KwRet = "ret"
+        KwGen = "gen"
         KwCase = "case"
         KwElse = "else"
         KwLoop = "loop"
-        KwWith = "with"
         KwSkip = "skip"
         KwExit = "exit"
-        KwStep = "step"
-
-        KwRet = "ret"
-        KwGen = "gen"
-
+        KwWith = "with"
         KwWhere = "where"
         KwAs = "as"
         KwIs = "is"
-
         KwTrue = "true"
         KwFalse = "false"
         KwSelf = "self"
         KwSelfType = "Self"
-
         KwAnd = "and"
         KwOr = "or"
         KwNot = "not"
-
         KwOf = "of"
         KwIn = "in"
         KwAsync = "async"
@@ -125,20 +114,21 @@ Program ::= ModulePrototype
 // Module
 ModulePrototype ::= ModuleImplementation <<eof>>
 ModuleImplementation ::= ModuleMember*
-ModuleMember ::= FunctionPrototype | ClassPrototype | SupPrototypeInheritance | SupPrototypeFunctions | GlobalUseStatement | GlobalConstant
+ModuleMember ::= FunctionPrototype | ClassPrototype | SupPrototypeExtension | SupPrototypeFunctions | GlobalUseStatement | GlobalConstant
 
 // Class
 ClassPrototype ::= Annotation* KwCls UpperIdentifier GenericParameters? WhereBlock? ClassImplementation
 ClassImplementation ::= TkBraceL ClassMember* TkBraceR
 ClassMember ::= ClassAttribute
-ClassAttribute ::= Annotation* Identifier TkColon Type
+ClassAttribute ::= Annotation* Identifier TkColon Type ClassAttributeDefaultValue?
+ClassAttributeDefaultValue ::= TkAssign Expression
 
 // Superimposition
 SupPrototypeFunctions ::= KwSup GenericParameters? Type WhereBlock? SupImplementation
-SupPrototypeInheritance ::= KwSup GenericParameters? Type KwExt Type WhereBlock? SupImplementation
+SupPrototypeExtension ::= KwSup GenericParameters? Type KwExt Type WhereBlock? SupImplementation
 SupImplementation ::= TkBraceL SupMember* TkBraceR
-SupMember ::= SupMethodPrototype | SupTypedef
-SupTypedef ::= Annotation* UseStatement
+SupMember ::= SupMethodPrototype | SupUseStatement
+SupUseStatement ::= Annotation* UseStatement
 SupMethodPrototype ::= FunctionPrototype
 
 // Function
@@ -147,33 +137,34 @@ SubroutinePrototype ::= Annotation* KwFun Identifier GenericParameters? Function
 CoroutinePrototype ::= Annotation* KwCor Identifier GenericParameters? FunctionParameters TkArrowR Type WhereBlock? FunctionImplementation
 FunctionImplementation ::= TkBraceL FunctionMember* TkBraceR
 FunctionMember ::= Statement
-FunctionParameters ::= TkParenL (FunctionParameter (TkComma FunctionParameter)*)? TkParenR
-FunctionParameter ::= FunctionParameterVariadic | FunctionParameterOptional | FunctionParameterRequired | FunctionParameterSelf
-FunctionParameterRequired ::= LocalVariable TkColon Convention Type
-FunctionParameterOptional ::= LocalVariable TkColon Convention Type TkAssign Expression
-FunctionParameterVariadic ::= TkVariadic LocalVariable TkColon Convention Type
-FunctionParameterSelf ::= KwMut? Convention KwSelf
 FunctionCallArguments ::= TkParenL (FunctionCallArgument (TkComma FunctionCallArgument)*)? TkParenR
-FunctionCallArgument ::= FunctionCallArgumentNamed | FunctionCallArgumentNormal
-FunctionCallArgumentNormal ::= Convention TkVariadic? Expression
-FunctionCallArgumentNamed ::= Identifier TkAssign Convention Expression
+FunctionCallArgument ::= FunctionCallArgumentNamed | FunctionCallArgumentUnnamed
+FunctionCallArgumentUnnamed ::= Convention? TkDblDot? Expression
+FunctionCallArgumentNamed ::= Identifier TkAssign Convention? Expression
+FunctionParameters ::= TkParenL (FunctionParameter (TkComma FunctionParameter)*)? TkParenR
+FunctionParameter ::= FunctionParameterSelfWithArbitraryType | FunctionParameterVariadic | FunctionParameterOptional | FunctionParameterRequired | FunctionParameterSelf
+FunctionParameterSelf ::= KwMut? Convention? KwSelf
+FunctionParameterSelfWithArbitraryType ::= KwMut? KwSelf TkColon Type
+FunctionParameterRequired ::= LocalVariable TkColon Type
+FunctionParameterOptional ::= LocalVariable TkColon Type TkAssign Expression
+FunctionParameterVariadic ::= TkDblDot LocalVariable TkColon Type
 
 // Generics
+GenericArguments ::= TkBrackL (GenericArgument (TkComma GenericArgument)*)? TkBrackR
+GenericArgument ::= GenericTypeArgumentNamed | GenericTypeArgumentUnnamed | GenericCompArgumentNamed | GenericCompArgumentUnnamed
+GenericTypeArgumentUnnamed ::= Type
+GenericTypeArgumentNamed ::= UpperIdentifier TkAssign Type
+GenericCompArgumentUnnamed ::= GlobalConstantValue
+GenericCompArgumentNamed ::= Identifier TkAssign GlobalConstantValue
+GenericInlineConstraints ::= TkColon (Type (TkAdd Type)*)
 GenericParameters ::= TkBrackL (GenericParameter (TkComma GenericParameter)*)? TkBrackR
 GenericParameter ::= GenericTypeParameterVariadic | GenericTypeParameterOptional | GenericTypeParameterRequired | GenericCompParameterVariadic | GenericCompParameterOptional | GenericCompParameterRequired
 GenericTypeParameterRequired ::= UpperIdentifier GenericInlineConstraints?
 GenericTypeParameterOptional ::= UpperIdentifier GenericInlineConstraints? TkAssign Type
-GenericTypeParameterVariadic ::= TkVariadic UpperIdentifier GenericInlineConstraints?
-GenericCompParameterRequired ::= KwCmp TkVariadic Identifier TkColon Type
+GenericTypeParameterVariadic ::= TkDblDot UpperIdentifier GenericInlineConstraints?
+GenericCompParameterRequired ::= KwCmp TkDblDot Identifier TkColon Type
 GenericCompParameterOptional ::= KwCmp Identifier TkColon Type TkAssign GlobalConstantValue
 GenericCompParameterVariadic ::= KwCmp Identifier TkColon Type
-GenericArguments ::= TkBrackL (GenericArgument (TkComma GenericArgument)*)? TkBrackR
-GenericArgument ::= GenericTypeArgumentNamed | GenericTypeArgumentNormal | GenericCompArgumentNamed | GenericCompArgumentNormal
-GenericTypeArgumentNormal ::= Type
-GenericTypeArgumentNamed ::= UpperIdentifier TkAssign Type
-GenericCompArgumentNormal ::= GlobalConstantValue
-GenericCompArgumentNamed ::= Identifier TkAssign GlobalConstantValue
-GenericInlineConstraints ::= TkColon (Type (TkAdd Type)*)
 
 // Constraints
 WhereBlock ::= KwWhere WhereBlockConstraintsGroup
@@ -181,19 +172,19 @@ WhereBlockConstraintsGroup ::= TkBrackL (WhereBlockConstraints (TkComma WhereBlo
 WhereBlockConstraints ::= Type (TkComma Type)* TkColon Type (TkAdd Type)*
 
 // Annotation
-Annotation ::= TkAt Identifier (TkDblColon Identifier)*
+Annotation ::= TkAt Identifier
 
 // Expressions
 Expression ::= BinaryExpressionLevel1
 BinaryExpressionLevel1 ::= BinaryExpressionLevel2 (BinaryOpPrecedenceLevel1 BinaryExpressionLevel1)*
 BinaryExpressionLevel2 ::= BinaryExpressionLevel3 (BinaryOpPrecedenceLevel2 BinaryExpressionLevel2)*
-BinaryExpressionLevel3 ::= BinaryExpressionLevel4 (BinaryOpPrecedenceLevel3 PatternVariantDestructureObject)*
+BinaryExpressionLevel3 ::= BinaryExpressionLevel4 (BinaryOpPrecedenceLevel3 PatternGroupDestructure)*
 BinaryExpressionLevel4 ::= BinaryExpressionLevel5 (BinaryOpPrecedenceLevel4 BinaryExpressionLevel4)*
 BinaryExpressionLevel5 ::= BinaryExpressionLevel6 (BinaryOpPrecedenceLevel5 BinaryExpressionLevel5)*
 BinaryExpressionLevel6 ::= UnaryExpression (BinaryOpPrecedenceLevel6 BinaryExpressionLevel6)*
 UnaryExpression ::= UnaryOp* PostfixExpression
 PostfixExpression ::= PrimaryExpression PostfixOp*
-PrimaryExpression ::= Literal | ObjectInitialization | ParenthesizedExpression | Identifier | Type | CaseExpression | LoopExpression | WithExpression | GenExpression | InnerScope | SelfKeyword | TkVariadic  //  | LambdaPrototype
+PrimaryExpression ::= Literal | ObjectInitialization | ParenthesizedExpression | Identifier | Type | CaseExpression | LoopExpression | WithExpression | GenExpression | InnerScope | SelfKeyword | TkDblDot  //  | LambdaPrototype
 ParenthesizedExpression ::= TkParenL Expression TkParenR
 SelfKeyword ::= KwSelf
 
@@ -208,23 +199,19 @@ LoopExpressionConditionIterable ::= LocalVariable KwIn Expression
 LoopElseExpression ::= KwElse InnerScope
 GenExpression ::= GenExpressionUnroll | GenExpressionNormal
 GenExpressionNormal ::= GenExpressionNormalWithExpression | GenExpressionNormalNoExpression
-GenExpressionNormalWithExpression ::= KwGen Convention WithExpression
+GenExpressionNormalWithExpression ::= KwGen Convention? Expression
 GenExpressionNormalNoExpression ::= KwGen
 GenExpressionUnroll ::= KwGen KwWith Expression
-WithExpression ::= KwWith WithExpressionLhsAlias? Expression InnerScope
-WithExpressionLhsAlias ::= LocalVariable TkAssign
 
 // Statements
-ReturnStatement ::= KwRet Expression?
+RetStatement ::= KwRet Expression?
 ExitStatement ::= KwExit+ (KwSkip | Expression)?
 SkipStatement ::= KwSkip
-PinStatement ::= KwPin Expression (TkComma Expression)*
-RelStatement ::= KwRel Expression (TkComma Expression)*
 InnerScope ::= TkBraceL Statement* TkBraceR
-Statement ::= UseStatement | LetStatement | ReturnStatement | ExitStatement | SkipStatement | PinStatement | RelStatement | AssignmentStatement | Expression
+Statement ::= UseStatement | LetStatement | RetStatement | ExitStatement | SkipStatement | AssignmentStatement | Expression
 
 // Typedef
-GlobalUseStatement ::= Annotation* KwUse (UseStatementTypeAlias | UseStatementImport)
+GlobalUseStatement ::= Annotation* UseStatement
 UseStatement ::= KwUse UpperIdentifier GenericParameters? TkAssign Type
 
 // Variables
@@ -234,12 +221,12 @@ LetStatementInitialized ::= KwLet LocalVariable TkAssign Expression
 LetStatementUninitialized ::= KwLet LocalVariable TkColon Type
 LocalVariable ::= LocalVariableDestructureTuple | LocalVariableDestructureArray | LocalVariableSingleIdentifier | LocalVariableDestructureObject
 LocalVariableSkipArgument ::= TkUnderscore
-LocalVariableSkipArguments ::= TkVariadic LocalVariableSingleIdentifier?
+LocalVariableSkipArguments ::= TkDblDot LocalVariableSingleIdentifier?
 LocalVariableSingleIdentifier ::= KwMut? Identifier LocalVariableSingleIdentifierAlias?
 LocalVariableSingleIdentifierAlias ::= KwAs Identifier
 LocalVariableDestructureArray ::= TkBrackL LocalVariableNestedForDestructureArray (TkComma LocalVariableNestedForDestructureArray)* TkBrackR
 LocalVariableDestructureTuple ::= TkParenL LocalVariableNestedForDestructureTuple (TkComma LocalVariableNestedForDestructureTuple)* TkParenR
-LocalVariableDestructureObject ::= TypeSingle TkParenL LocalVariableNestedForDestructureObject (TkComma LocalVariableNestedForDestructureObject)* TkParenR
+LocalVariableDestructureObject ::= TypeSimple TkParenL LocalVariableNestedForDestructureObject (TkComma LocalVariableNestedForDestructureObject)* TkParenR
 LocalVariableAttributeBinding ::= Identifier TkAssign LocalVariableNestedForAttributeBinding
 LocalVariableNestedForDestructureArray ::= LocalVariableDestructureArray | LocalVariableDestructureTuple | LocalVariableDestructureObject | LocalVariableSingleIdentifier | LocalVariableSkipArguments | LocalVariableSkipArgument
 LocalVariableNestedForDestructureTuple ::= LocalVariableDestructureArray | LocalVariableDestructureTuple | LocalVariableDestructureObject | LocalVariableSingleIdentifier | LocalVariableSkipArguments | LocalVariableSkipArgument
@@ -247,7 +234,7 @@ LocalVariableNestedForDestructureObject ::= LocalVariableAttributeBinding | Loca
 LocalVariableNestedForAttributeBinding ::= LocalVariableDestructureArray | LocalVariableDestructureTuple | LocalVariableDestructureObject | LocalVariableSingleIdentifier
 
 // Assignment
-AssignmentStatement ::= Expression+ TkAssign Expression+
+AssignmentStatement ::= Expression (TkComma Expression)* TkAssign Expression (TkComma Expression)*
 
 // Patterns
 CaseExpressionBranchSimple ::= PatternStatementFlavourElseCase | PatternStatementFlavourElse
@@ -260,11 +247,11 @@ PatternStatementFlavourElse ::= PatternVariantElse InnerScope
 PatternGroupDestructure ::= PatternVariantDestructureArray | PatternVariantDestructureTuple | PatternVariantDestructureObject
 
 PatternVariantSkipArgument ::= TkUnderscore
-PatternVariantSkipArguments ::= TkVariadic PatternVariantSingleIdentifier?
+PatternVariantSkipArguments ::= TkDblDot PatternVariantSingleIdentifier?
 PatternVariantSingleIdentifier ::= KwMut? Identifier LocalVariableSingleIdentifierAlias?
 PatternVariantDestructureArray ::= TkBrackL PatternVariantNestedForDestructureArray (TkComma PatternVariantNestedForDestructureArray)* TkBrackR
 PatternVariantDestructureTuple ::= TkParenL PatternVariantNestedForDestructureTuple (TkComma PatternVariantNestedForDestructureTuple)* TkParenR
-PatternVariantDestructureObject ::= TypeSingle TkParenL (PatternVariantNestedForDestructureObject (TkComma PatternVariantNestedForDestructureObject)*)? TkParenR
+PatternVariantDestructureObject ::= TypeSimple TkParenL (PatternVariantNestedForDestructureObject (TkComma PatternVariantNestedForDestructureObject)*)? TkParenR
 PatternVariantAttributeBinding ::= Identifier TkAssign PatternVariantNestedForAttributeBinding
 PatternVariantLiteral ::= LiteralFloat | LiteralInteger | LiteralString | LiteralBoolean
 PatternVariantExpression ::= Expression
@@ -288,28 +275,25 @@ BooleanComparisonOp ::= TkEq | TkNe | TkLe | TkGe | TkLt | TkGt
 UnaryOp ::= UnaryOpAsyncCall
 UnaryOpAsyncCall ::= KwAsync
 
-PostfixOp ::= PostfixOpMemberAccess | PostfixOpEarlyReturn | PostfixOpFunctionCall | PostfixOpNotKeyword | PostfixOpStepKeyword
-PostfixOpFunctionCall ::= GenericArguments? FunctionCallArguments TkVariadic?
+PostfixOp ::= PostfixOpMemberAccess | PostfixOpEarlyReturn | PostfixOpFunctionCall | PostfixOpNotKeyword
+PostfixOpFunctionCall ::= GenericArguments? FunctionCallArguments TkDblDot?
 PostfixOpMemberAccess ::= PostfixOpMemberAccessRuntime | PostfixOpMemberAccessStatic
 PostfixOpMemberAccessRuntime ::= TkDot (Identifier | LxDecInteger)
 PostfixOpMemberAccessStatic ::= TkDblColon Identifier
 PostfixOpEarlyReturn ::= TkQst
 PostfixOpNotKeyword ::= TkDot KwNot
-PostfixOpStepKeyword ::= TkDot KwStep
 
 // Conventions
-Convention ::= ConventionMut | ConventionRef | ConventionMov
+Convention ::= ConventionMut | ConventionRef
 ConventionMut ::= TkBorrow KwMut
 ConventionRef ::= TkBorrow
-ConventionMov ::=
 
 // Object Initialization
-ObjectInitialization ::= TypeSingle ObjectInitializerArguments
+ObjectInitialization ::= TypeSimple ObjectInitializerArguments
 ObjectInitializerArguments ::= TkParenL (ObjectInitializerArgument (TkComma ObjectInitializerArgument)*)? TkParenR
 ObjectInitializerArgument ::= ObjectInitializerArgumentNamed | ObjectInitializerArgumentNormal
-ObjectInitializerArgumentNormal ::= Identifier
-ObjectInitializerArgumentNamed ::= ObjectInitializerArgumentNamedKey TkAssign Expression
-ObjectInitializerArgumentNamedKey ::= Identifier | KwElse  // todo: will change to "..default" not "else="
+ObjectInitializerArgumentNormal ::= TkDblDot? Identifier
+ObjectInitializerArgumentNamed ::= Identifier TkAssign Expression
 
 // Lambda (Todo)
 //LambdaPrototype ::= LambdaSubroutinePrototype | LambdaCoroutinePrototype
@@ -321,14 +305,27 @@ ObjectInitializerArgumentNamedKey ::= Identifier | KwElse  // todo: will change 
 //LambdaCaptureItemNamed ::= Identifier TkAssign Convention Expression
 
 // Types
-Type ::= TypeOptional | TypeUnion | TypeTuple | TypeSingle
-TypeOptional ::= TkQst Type
-TypeSingle ::= TypeSingleWithNamespace | TypeSingleWithoutNamespace
-TypeSingleWithNamespace ::= Identifier (TkDblColon Identifier)* (TkDblColon GenericIdentifier)+
-TypeSingleWithoutNamespace ::= GenericIdentifier (TkDblColon GenericIdentifier)*
-TypeTuple ::= TkParenL (Type (TkComma Type)*)? TkParenR
-TypeNonUnion ::= TypeSingle | TypeTuple | TypeOptional
-TypeUnion ::= TypeNonUnion (TkUnion TypeNonUnion)*
+Type ::= TypeParenthesized | TypeArray | TypeTuple | TypeBinaryExpressionLevel1
+TypeSimple ::= TypeUnaryOpNamespace* TypeSingle
+TypeBinaryExpressionLevel1 ::= TypeBinaryExpressionLevel2 (TypeBinaryOpPrecedenceLevel1 TypeBinaryExpressionLevel1)*
+TypeBinaryExpressionLevel2 ::= TypeBinaryPostfixExpression (TypeBinaryOpPrecedenceLevel2 TypeBinaryExpressionLevel2)*
+TypeBinaryOpPrecedenceLevel1 ::= KwAnd
+TypeBinaryOpPrecedenceLevel2 ::= KwOr
+TypeBinaryPostfixExpression ::= TypeUnaryExpression TypePostfixOp*
+TypeUnaryExpression ::= TypeUnaryOp* TypeSingle
+TypeParenthesized ::= TkParenL Type TkParenR
+TypeTuple ::= TypeTuple1Items | TypeTupleNItems
+TypeArray ::= TkBrackL Type TkComma LxDecInteger TkBrackR
+TypeSingle ::= GenericIdentifier | TypeSelf
+TypeSelf ::= KwSelfType
+TypeUnaryOp ::= TypeUnaryOpNamespace | TypeUnaryOpBorrow
+TypeUnaryOpNamespace ::= Identifier TkDblColon
+TypeUnaryOpBorrow ::= Convention
+TypePostfixOp ::= TypePostfixOpNestedType | TypePostfixOpOptionalType
+TypePostfixOpNestedType ::= TkDblColon TypeSingle
+TypePostfixOpOptionalType ::= TkQst
+TypeTuple1Items ::= TkParenL Type TkComma TkParenR
+TypeTupleNItems ::= TkParenL (Type (TkComma Type)*)? TkParenR
 
 // Identifiers
 Identifier ::= LxIdentifier
@@ -362,12 +359,12 @@ LiteralArray0Items ::= TkBrackL Type TkBrackR
 LiteralArrayNItems ::= TkBrackL (Expression (TkComma Expression)*) TkBrackR
 
 // Global Constants
-GlobalConstantValue ::= LiteralFloat | LiteralInteger | LiteralString | GlobalConstantLiteralTuple | GlobalConstantLiteralArray | LiteralBoolean | GlobalConstantObjectInitialization
+GlobalConstantValue ::= LiteralFloat | LiteralInteger | LiteralString | GlobalConstantLiteralTuple | GlobalConstantLiteralArray | LiteralBoolean | GlobalConstantObjectInitialization | Identifier
 GlobalConstantLiteralTuple ::= LiteralTuple0Items | GlobalConstantLiteralTuple1Items | GlobalConstantLiteralTupleNItems
 GlobalConstantLiteralTuple1Items ::= TkParenL GlobalConstant TkComma TkParenR
 GlobalConstantLiteralTupleNItems ::= TkParenL (GlobalConstant (TkComma GlobalConstantValue)*) TkParenR
 GlobalConstantLiteralArray ::= LiteralArray0Items | GlobalConstantLiteralArrayNItems
 GlobalConstantLiteralArrayNItems ::= TkBrackL (GlobalConstant (TkComma GlobalConstantValue)*) TkBrackR
-GlobalConstantObjectInitialization ::= TypeSingle GlobalConstantObjectInitializerArguments
+GlobalConstantObjectInitialization ::= TypeSimple GlobalConstantObjectInitializerArguments
 GlobalConstantObjectInitializerArguments ::= TkParenL (GlobalConstantObjectInitializerArgumentNamed (TkComma GlobalConstantObjectInitializerArgumentNamed)*)? TkParenR
 GlobalConstantObjectInitializerArgumentNamed ::= Identifier TkAssign GlobalConstantValue
