@@ -72,7 +72,7 @@ LXDOUBLEQUOTESTR=\"[^\"]*\"
   ":"                       { return TKCOLON; }
   "::"                      { return TKDBLCOLON; }
   "&"                       { return TKBORROW; }
-  "|"                       { return TKUNION; }
+  "|"                       { return TKVERTICALBAR; }
   ","                       { return TKCOMMA; }
   "="                       { return TKASSIGN; }
   "->"                      { return TKARROWR; }
@@ -100,6 +100,8 @@ LXDOUBLEQUOTESTR=\"[^\"]*\"
   "exit"                    { return KWEXIT; }
   "with"                    { return KWWITH; }
   "where"                   { return KWWHERE; }
+  "type"                    { return KWTYPE; }
+  "caps"                    { return KWCAPS; }
   "as"                      { return KWAS; }
   "is"                      { return KWIS; }
   "true"                    { return KWTRUE; }

@@ -25,6 +25,7 @@ public class SppSyntaxHighlighter extends SyntaxHighlighterBase {
 
     public static final TextAttributesKey CONVENTION = TextAttributesKey.createTextAttributesKey("SPP_CONVENTION", DefaultLanguageHighlighterColors.OPERATION_SIGN);
     public static final TextAttributesKey ATTRIBUTE = TextAttributesKey.createTextAttributesKey("SPP_ATTRIBUTE", DefaultLanguageHighlighterColors.IDENTIFIER);
+    public static final TextAttributesKey ANNOTATION = TextAttributesKey.createTextAttributesKey("SPP_ANNOTATION", DefaultLanguageHighlighterColors.METADATA);
 
     private static final TextAttributesKey[] BAD_CHAR_KEYS = new TextAttributesKey[]{BAD_CHARACTER};
     private static final TextAttributesKey[] EMPTY_KEYS = new TextAttributesKey[0];
@@ -45,7 +46,7 @@ public class SppSyntaxHighlighter extends SyntaxHighlighterBase {
 
     @Override
     @NotNull
-    public TextAttributesKey[] getTokenHighlights(IElementType tokenType) {
+    public TextAttributesKey @NotNull [] getTokenHighlights(IElementType tokenType) {
         if (SppTokenSets.KEYWORDS.contains(tokenType)) {
             return KEYWORD_KEYS;
         } else if (tokenType.equals(SppTypes.LXIDENTIFIER)) {

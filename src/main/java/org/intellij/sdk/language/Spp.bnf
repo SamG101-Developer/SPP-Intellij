@@ -52,7 +52,7 @@
         TkDblColon = "::"
 
         TkBorrow = "&"
-        TkUnion = "|"
+        TkVerticalBar = "|"
 
         TkComma = ","
         TkAssign = "="
@@ -83,6 +83,8 @@
         KwExit = "exit"
         KwWith = "with"
         KwWhere = "where"
+        KwType = "type"
+        KwCaps = "caps"
         KwAs = "as"
         KwIs = "is"
         KwTrue = "true"
@@ -114,7 +116,7 @@ Program ::= ModulePrototype
 // Module
 ModulePrototype ::= ModuleImplementation <<eof>>
 ModuleImplementation ::= ModuleMember*
-ModuleMember ::= FunctionPrototype | ClassPrototype | SupPrototypeExtension | SupPrototypeFunctions | GlobalUseStatement | GlobalConstant
+ModuleMember ::= FunctionPrototype | ClassPrototype | SupPrototypeExtension | SupPrototypeFunctions | GlobalUseStatement | GlobalTypeStatement | GlobalCmpStatement
 
 // Class
 ClassPrototype ::= Annotation* KwCls UpperIdentifier GenericParameters? WhereBlock? ClassImplementation
@@ -127,9 +129,10 @@ ClassAttributeDefaultValue ::= TkAssign Expression
 SupPrototypeFunctions ::= KwSup GenericParameters? Type WhereBlock? SupImplementation
 SupPrototypeExtension ::= KwSup GenericParameters? Type KwExt Type WhereBlock? SupImplementation
 SupImplementation ::= TkBraceL SupMember* TkBraceR
-SupMember ::= SupMethodPrototype | SupUseStatement
-SupUseStatement ::= Annotation* UseStatement
+SupMember ::= SupMethodPrototype | SupTypeStatement | SupCmpStatement
 SupMethodPrototype ::= FunctionPrototype
+SupTypeStatement ::= Annotation* TypeStatement
+SupCmpStatement ::= Annotation* CmpStatement
 
 // Function
 FunctionPrototype ::= CoroutinePrototype | SubroutinePrototype
@@ -154,8 +157,8 @@ GenericArguments ::= TkBrackL (GenericArgument (TkComma GenericArgument)*)? TkBr
 GenericArgument ::= GenericTypeArgumentNamed | GenericTypeArgumentUnnamed | GenericCompArgumentNamed | GenericCompArgumentUnnamed
 GenericTypeArgumentUnnamed ::= Type
 GenericTypeArgumentNamed ::= UpperIdentifier TkAssign Type
-GenericCompArgumentUnnamed ::= GlobalConstantValue
-GenericCompArgumentNamed ::= Identifier TkAssign GlobalConstantValue
+GenericCompArgumentUnnamed ::= CmpValue
+GenericCompArgumentNamed ::= Identifier TkAssign CmpValue
 GenericInlineConstraints ::= TkColon (Type (TkAdd Type)*)
 GenericParameters ::= TkBrackL (GenericParameter (TkComma GenericParameter)*)? TkBrackR
 GenericParameter ::= GenericTypeParameterVariadic | GenericTypeParameterOptional | GenericTypeParameterRequired | GenericCompParameterVariadic | GenericCompParameterOptional | GenericCompParameterRequired
@@ -163,7 +166,7 @@ GenericTypeParameterRequired ::= UpperIdentifier GenericInlineConstraints?
 GenericTypeParameterOptional ::= UpperIdentifier GenericInlineConstraints? TkAssign Type
 GenericTypeParameterVariadic ::= TkDblDot UpperIdentifier GenericInlineConstraints?
 GenericCompParameterRequired ::= KwCmp TkDblDot Identifier TkColon Type
-GenericCompParameterOptional ::= KwCmp Identifier TkColon Type TkAssign GlobalConstantValue
+GenericCompParameterOptional ::= KwCmp Identifier TkColon Type TkAssign CmpValue
 GenericCompParameterVariadic ::= KwCmp Identifier TkColon Type
 
 // Constraints
@@ -184,7 +187,7 @@ BinaryExpressionLevel5 ::= BinaryExpressionLevel6 (BinaryOpPrecedenceLevel5 Bina
 BinaryExpressionLevel6 ::= UnaryExpression (BinaryOpPrecedenceLevel6 BinaryExpressionLevel6)*
 UnaryExpression ::= UnaryOp* PostfixExpression
 PostfixExpression ::= PrimaryExpression PostfixOp*
-PrimaryExpression ::= Literal | ObjectInitialization | ParenthesizedExpression | Identifier | Type | CaseExpression | LoopExpression | WithExpression | GenExpression | InnerScope | SelfKeyword | TkDblDot  //  | LambdaPrototype
+PrimaryExpression ::= LambdaExpression | Literal | ObjectInitialization | ParenthesizedExpression | Identifier | Type | CaseExpression | LoopExpression | WithExpression | GenExpression | InnerScope | SelfKeyword | TkDblDot
 ParenthesizedExpression ::= TkParenL Expression TkParenR
 SelfKeyword ::= KwSelf
 
@@ -212,10 +215,13 @@ Statement ::= UseStatement | LetStatement | RetStatement | ExitStatement | SkipS
 
 // Typedef
 GlobalUseStatement ::= Annotation* UseStatement
-UseStatement ::= KwUse UpperIdentifier GenericParameters? TkAssign Type
+GlobalTypeStatement ::= Annotation* TypeStatement
+UseStatement ::= KwUse TypeSimple
+TypeStatement ::= KwType UpperIdentifier GenericParameters? TkAssign Type
 
 // Variables
-GlobalConstant ::= Annotation* KwCmp LocalVariableSingleIdentifier TkColon Type TkAssign GlobalConstantValue
+CmpStatement ::= KwCmp LocalVariableSingleIdentifier TkColon Type TkAssign CmpValue
+GlobalCmpStatement ::= Annotation* CmpStatement
 LetStatement ::= LetStatementInitialized | LetStatementUninitialized
 LetStatementInitialized ::= KwLet LocalVariable TkAssign Expression
 LetStatementUninitialized ::= KwLet LocalVariable TkColon Type
@@ -295,14 +301,12 @@ ObjectInitializerArgument ::= ObjectInitializerArgumentNamed | ObjectInitializer
 ObjectInitializerArgumentNormal ::= TkDblDot? Identifier
 ObjectInitializerArgumentNamed ::= Identifier TkAssign Expression
 
-// Lambda (Todo)
-//LambdaPrototype ::= LambdaSubroutinePrototype | LambdaCoroutinePrototype
-//LambdaSubroutinePrototype ::= KwFun GenericParameters? FunctionParameters TkArrowR Type LambdaCaptureBlock WhereBlock? FunctionImplementation
-//LambdaCoroutinePrototype ::= KwCor GenericParameters? FunctionParameters TkArrowR Type LambdaCaptureBlock WhereBlock? FunctionImplementation
-//LambdaCaptureBlock ::= KwWith TkBrackL (LambdaCaptureItem (TkComma LambdaCaptureItem)*) TkBrackR
-//LambdaCaptureItem ::= LambdaCaptureItemNamed | LambdaCaptureItemNormal
-//LambdaCaptureItemNormal ::= Convention Expression
-//LambdaCaptureItemNamed ::= Identifier TkAssign Convention Expression
+// Lambda
+LambdaExpression ::= KwCor? LambdaExpressionParameterAndCaptureGroup Expression
+LambdaExpressionParameterAndCaptureGroup ::= TkVerticalBar (LambdaExpressionParameter (TkComma LambdaExpressionParameter)*)? TkVerticalBar LambdaExpressionCaptureGroup? TkVerticalBar
+LambdaExpressionCaptureGroup ::= KwCaps (LambdaExpressionCaptureItem (TkComma LambdaExpressionCaptureItem)*)?
+LambdaExpressionCaptureItem ::= Convention? Identifier
+LambdaExpressionParameter ::= FunctionParameterVariadic | FunctionParameterOptional | FunctionParameterRequired
 
 // Types
 Type ::= TypeParenthesized | TypeArray | TypeTuple | TypeBinaryExpressionLevel1
@@ -359,12 +363,12 @@ LiteralArray0Items ::= TkBrackL Type TkBrackR
 LiteralArrayNItems ::= TkBrackL (Expression (TkComma Expression)*) TkBrackR
 
 // Global Constants
-GlobalConstantValue ::= LiteralFloat | LiteralInteger | LiteralString | GlobalConstantLiteralTuple | GlobalConstantLiteralArray | LiteralBoolean | GlobalConstantObjectInitialization | Identifier
-GlobalConstantLiteralTuple ::= LiteralTuple0Items | GlobalConstantLiteralTuple1Items | GlobalConstantLiteralTupleNItems
-GlobalConstantLiteralTuple1Items ::= TkParenL GlobalConstant TkComma TkParenR
-GlobalConstantLiteralTupleNItems ::= TkParenL (GlobalConstant (TkComma GlobalConstantValue)*) TkParenR
-GlobalConstantLiteralArray ::= LiteralArray0Items | GlobalConstantLiteralArrayNItems
-GlobalConstantLiteralArrayNItems ::= TkBrackL (GlobalConstant (TkComma GlobalConstantValue)*) TkBrackR
-GlobalConstantObjectInitialization ::= TypeSimple GlobalConstantObjectInitializerArguments
-GlobalConstantObjectInitializerArguments ::= TkParenL (GlobalConstantObjectInitializerArgumentNamed (TkComma GlobalConstantObjectInitializerArgumentNamed)*)? TkParenR
-GlobalConstantObjectInitializerArgumentNamed ::= Identifier TkAssign GlobalConstantValue
+CmpValue ::= LiteralFloat | LiteralInteger | LiteralString | CmpLiteralTuple | CmpLiteralArray | LiteralBoolean | CmpObjectInitialization | Identifier
+CmpLiteralTuple ::= LiteralTuple0Items | CmpLiteralTuple1Items | CmpLiteralTupleNItems
+CmpLiteralTuple1Items ::= TkParenL CmpStatement TkComma TkParenR
+CmpLiteralTupleNItems ::= TkParenL (CmpStatement (TkComma CmpValue)*) TkParenR
+CmpLiteralArray ::= LiteralArray0Items | CmpLiteralArrayNItems
+CmpLiteralArrayNItems ::= TkBrackL (CmpStatement (TkComma CmpValue)*) TkBrackR
+CmpObjectInitialization ::= TypeSimple CmpObjectInitializerArguments
+CmpObjectInitializerArguments ::= TkParenL (CmpObjectInitializerArgumentNamed (TkComma CmpObjectInitializerArgumentNamed)*)? TkParenR
+CmpObjectInitializerArgumentNamed ::= Identifier TkAssign CmpValue

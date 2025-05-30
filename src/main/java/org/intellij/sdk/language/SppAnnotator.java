@@ -29,5 +29,8 @@ final class SppAnnotator implements Annotator {
         else if (element instanceof SppIdentifier && element.getParent() instanceof SppPostfixOpMemberAccessStatic) {
             holder.newSilentAnnotation(HighlightSeverity.INFORMATION).range(element).textAttributes(SppSyntaxHighlighter.TYPE).create();
         }
+        else if (element instanceof SppAnnotation) {
+            holder.newSilentAnnotation(HighlightSeverity.INFORMATION).range(element).textAttributes(SppSyntaxHighlighter.ANNOTATION).create();
+        }
     }
 }

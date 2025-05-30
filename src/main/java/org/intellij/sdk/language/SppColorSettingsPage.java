@@ -25,6 +25,7 @@ public class SppColorSettingsPage implements ColorSettingsPage {
             new AttributesDescriptor("Operator", SppSyntaxHighlighter.OPERATOR),
             new AttributesDescriptor("Convention", SppSyntaxHighlighter.CONVENTION),
             new AttributesDescriptor("Attribute", SppSyntaxHighlighter.ATTRIBUTE),
+            new AttributesDescriptor("Annotation", SppSyntaxHighlighter.ANNOTATION),
             new AttributesDescriptor("BRACKET", SppSyntaxHighlighter.BRACKET),
     };
 

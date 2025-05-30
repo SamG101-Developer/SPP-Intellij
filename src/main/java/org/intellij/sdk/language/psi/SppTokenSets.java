@@ -40,6 +40,8 @@ public interface SppTokenSets {
             SppTypes.KWRET,
             SppTypes.KWGEN,
             SppTypes.KWWHERE,
+            SppTypes.KWTYPE,
+            SppTypes.KWCAPS,
             SppTypes.KWAS,
             SppTypes.KWIS,
             SppTypes.KWTRUE,
