@@ -47,7 +47,7 @@ public interface SppTokenSets {
             SppTypes.KWTRUE,
             SppTypes.KWFALSE,
             SppTypes.KWSELF,
-            SppTypes.KWSELF,
+            SppTypes.KWSELFTYPE,
             SppTypes.KWAND,
             SppTypes.KWOR,
             SppTypes.KWNOT,
